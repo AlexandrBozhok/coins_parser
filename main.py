@@ -32,12 +32,15 @@ async def get_page_soup_obj(url: str) -> BeautifulSoup:
 
 async def get_pagination_urls() -> list[str]:
     shop_page_1_url = f'{settings.nbu_shop_base_url}catalog.html'
+    urls = [shop_page_1_url]
     soup = await get_page_soup_obj(shop_page_1_url)
     main_block = soup.find('div', {'id': 'block'})
-    pagination = main_block.find('ul', {'class': 'pagination'}).find_all('a')
+    pagination = main_block.find('ul', {'class': 'pagination'})
+    if pagination:
+        pagination_items = pagination.find_all('a')
+        pagination_urls = list({f'{settings.nbu_shop_base_url}{item["href"]}' for item in pagination_items})
+        urls.extend(pagination_urls)
 
-    urls = list({f'{settings.nbu_shop_base_url}{item["href"]}' for item in pagination})
-    urls.insert(0, shop_page_1_url)
     return urls
 
 
