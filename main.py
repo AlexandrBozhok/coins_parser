@@ -1,3 +1,5 @@
+import asyncio
+import datetime
 from typing import Any
 
 import aiohttp
@@ -11,8 +13,7 @@ from pydantic import ValidationError
 
 from config import settings
 from schemas import Product
-from utils import build_new_product_message
-
+from utils import build_new_product_message, get_known_product_message
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=settings.bot_api_token)
@@ -32,14 +33,18 @@ async def get_page_soup_obj(url: str) -> BeautifulSoup:
 
 async def get_pagination_urls() -> list[str]:
     shop_page_1_url = f'{settings.nbu_shop_base_url}catalog.html'
-    urls = [shop_page_1_url]
     soup = await get_page_soup_obj(shop_page_1_url)
-    main_block = soup.find('div', {'id': 'block'})
-    pagination = main_block.find('ul', {'class': 'pagination'})
-    if pagination:
-        pagination_items = pagination.find_all('a')
-        pagination_urls = list({f'{settings.nbu_shop_base_url}{item["href"]}' for item in pagination_items})
-        urls.extend(pagination_urls)
+    urls = []
+    try:
+        main_block = soup.find('div', {'id': 'block'})
+        pagination = main_block.find('ul', {'class': 'pagination'})
+        if pagination:
+            pagination_items = pagination.find_all('a')
+            pagination_urls = list({f'{settings.nbu_shop_base_url}{item["href"]}' for item in pagination_items})
+            urls.extend(pagination_urls)
+        urls.append(shop_page_1_url)
+    except AttributeError:
+        logging.error('Catalog page is unavailable. Main block with id=block not found.')
 
     return urls
 
@@ -107,23 +112,46 @@ async def find_new_products(products: list[Product]) -> list[Product]:
             msg = build_new_product_message(product)
             await bot.send_message(chat_id=settings.chat_id, text=msg)
             new_products.append(product)
+        else:
+            # Якщо з сайту отримали продукт, який був у нас в базі - оновлюємо дату поля updated.
+            # При цьому, якщо поле продукту sold_out=True - міняємо на протилежне і відправляємо сповіщення в бот
+            fields_to_update = {
+                'updated': datetime.datetime.now()
+            }
+            if result['sold_out']:
+                fields_to_update['sold_out'] = False
+                msg = get_known_product_message(product)
+                await bot.send_message(chat_id=settings.chat_id, text=msg, parse_mode='HTML')
+            await collection.update_one({'_id': result['_id']}, {'$set': fields_to_update})
     return new_products
+
+
+async def update_sold_products():
+    collection = await get_coins_collection()
+    await collection.update_many({'updated': {'$lt': datetime.datetime.now() - datetime.timedelta(minutes=120)}},
+                                 {'$set': {'sold_out': True}})
 
 
 async def main():
     shop_urls = await get_pagination_urls()
-    products = []
-    for url in shop_urls:
-        result = await get_products_from_page(url)
-        products.extend(result)
-    logging.info(f'Product count on shop: {len(products)}')
-    new_products = await find_new_products(products)
-    if new_products:
-        collection = await get_coins_collection()
-        result = await collection.insert_many([item.dict() for item in new_products])
-        logging.info('Added new products %s' % repr(result.inserted_ids))
+    if shop_urls:
+        logging.info(f'Catalog page loaded. Pages count: {len(shop_urls)}')
+        products = []
+        for url in shop_urls:
+            result = await get_products_from_page(url)
+            products.extend(result)
+        logging.info(f'Product count on shop: {len(products)}')
+        new_products = await find_new_products(products)
+        # Знайти товари, які не апдейтились більше певної кількості хвилин і змінити значення sold_out=True
+        await update_sold_products()
+        if new_products:
+            collection = await get_coins_collection()
+            result = await collection.insert_many([item.dict() for item in new_products])
+            logging.info('Added new products %s' % repr(result.inserted_ids))
+        else:
+            logging.info('The script has completed work. No new coins were added')
     else:
-        logging.info('The script has completed work. No new coins were added')
+        logging.info('Shop pages list is empty.')
 
 
 async def get_coins_collection():
@@ -134,3 +162,7 @@ async def get_coins_collection():
     db = client['coins-db']
     collection = db.coins
     return collection
+
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
