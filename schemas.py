@@ -6,6 +6,7 @@ from pydantic import BaseModel, validator
 class Product(BaseModel):
     created: datetime.datetime = None
     updated: datetime.datetime = None
+    bank_product_id: int
     name: str
     price: int
     url: str
