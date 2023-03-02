@@ -110,7 +110,7 @@ async def find_new_products(products: list[Product]) -> list[Product]:
         result = await collection.find_one({'url': product.url})
         if not result:
             msg = build_new_product_message(product)
-            await bot.send_message(chat_id=settings.chat_id, text=msg)
+            await bot.send_message(chat_id=settings.chat_id, text=msg, parse_mode='HTML')
             new_products.append(product)
         else:
             # Якщо з сайту отримали продукт, який був у нас в базі - оновлюємо дату поля updated.
