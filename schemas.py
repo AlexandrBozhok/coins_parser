@@ -12,7 +12,7 @@ class Product(BaseModel):
     image_url: str
     material: str | None = None
     circulation: int | str | None = None
-    year_of_production: int
+    year_of_production: int | None = None
     sold_out: bool = False
 
     @validator('created', pre=True, always=True)
