@@ -75,15 +75,12 @@ def parse_product(product_tag: Tag) -> dict[str, Any]:
 
     coin_params = product_tag.find('div', {'class': 'product_bank_parameters'}).find_all('p')
     if coin_params:
-        material = ''
-        year_of_production = coin_params[-1].text
-        circulation = coin_params[-2].text
         if len(coin_params) == 3:
-            material = coin_params[0].text
-
-        data['material'] = material
-        data['year_of_production'] = year_of_production
-        data['circulation'] = circulation
+            data['material'] = coin_params[0].text
+            data['circulation'] = coin_params[1].text
+            data['year_of_production'] = coin_params[2].text
+        else:
+            logging.info(f'Product {data["name"]} has problem with parsing params. Coin_params: {coin_params}')
     return data
 
 
@@ -160,7 +157,7 @@ async def get_coins_collection():
     )
     client = motor.motor_asyncio.AsyncIOMotorClient(conn_str, serverSelectionTimeoutMS=5000)
     db = client['coins-db']
-    collection = db.coins
+    collection = db[settings.db_collection]
     return collection
 
 if __name__ == '__main__':
