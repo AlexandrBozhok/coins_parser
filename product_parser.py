@@ -112,6 +112,8 @@ class ProductParser:
             soup = await self.__scrap_page(url)
             pages_soup.append(soup)
 
+        logging.info(f'Catalog page loaded. Pages count: {len(pages_soup)}')
+
         products = []
         for page in pages_soup:
             parsed_products = await self.get_products_from_page(page)

@@ -33,6 +33,7 @@ async def update_sold_products():
 async def main():
     parser = ProductParser()
     products = await parser.get_all()
+    logging.info(f'Founded product in catalog: {len(products)}')
     product_ids = [product.bank_product_id for product in products]
     collection = await get_coins_collection()
     new_products = await find_new_products(products)
@@ -56,6 +57,8 @@ async def main():
     if new_products:
         await collection.insert_many([item.dict() for item in new_products])
         logging.info('Added new products %s' % [item.name for item in new_products])
+    else:
+        logging.info('The script has completed work. No new coins were added')
 
 
 async def get_coins_collection():
