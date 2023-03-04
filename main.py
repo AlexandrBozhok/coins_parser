@@ -26,7 +26,7 @@ async def find_new_products(products: list[Product]) -> list[Product]:
 
 async def update_sold_products():
     collection = await get_coins_collection()
-    await collection.update_many({'updated': {'$lt': datetime.datetime.now() - datetime.timedelta(minutes=120)}},
+    await collection.update_many({'updated': {'$lt': datetime.datetime.now() - datetime.timedelta(minutes=5)}},
                                  {'$set': {'sold_out': True}})
 
 
@@ -54,7 +54,6 @@ async def main():
 
     await update_sold_products()
     if new_products:
-        collection = await get_coins_collection()
         await collection.insert_many([item.dict() for item in new_products])
         logging.info('Added new products %s' % [item.name for item in new_products])
 
