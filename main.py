@@ -74,4 +74,4 @@ if __name__ == '__main__':
     t = time.time()
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
-    print(f'TIME: {time.time() - t}')
+    logging.info(f'TIME: {time.time() - t}')
