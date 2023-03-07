@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     # MongoDB
     db_host: str
+    db_collection: str
     db_user: str
     db_password: str
 
