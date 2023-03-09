@@ -10,7 +10,7 @@ from src.schemas.payment import PaymentSignParams, PaymentInvoiceParams, Payment
 
 
 class PaymentController:
-    order_timeout = 120  # in seconds
+    order_timeout = 3600  # in seconds
 
     @classmethod
     def _create_signature(cls, secret_key: str, sign_values: list[Any]) -> str:
