@@ -83,6 +83,9 @@ class PaymentIn(BaseModel):
 class Client(BaseModel):
     created: datetime.datetime
     updated: datetime.datetime
+    first_name: str | None = None
+    last_name: str | None = None
+    username: str | None = None
     chat_id: int
     expired_at: datetime.datetime | None
     in_channel: bool
@@ -96,6 +99,9 @@ class ClientUpdateFields(BaseModel):
 class ClientIn(BaseModel):
     created: datetime.datetime | None = None
     updated: datetime.datetime | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    username: str | None = None
     chat_id: int
     expired_at: datetime.datetime | None = None
     in_channel: bool = False
@@ -109,6 +115,9 @@ class ClientOut(BaseModel):
     id: str = Field(alias='_id')
     created: datetime.datetime
     updated: datetime.datetime
+    first_name: str | None = None
+    last_name: str | None = None
+    username: str | None = None
     chat_id: int
     payments: list[Payment] = []
     expired_at: datetime.datetime | None = None
