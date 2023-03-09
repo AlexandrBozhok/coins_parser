@@ -15,13 +15,24 @@ from src.schemas.mongo_collections import ClientIn, PaymentIn, Product, Invite
 from src.services.payment_controller import PaymentController
 from src.utils.bot_helpers import get_start_message, get_payment_message, success_payment_and_invite_messages, \
     kick_user_from_channel_msg, find_product_message, get_join_command_message, get_info_command_message, \
-    get_unknown_command_message, get_support_command_message
+    get_unknown_command_message, get_support_command_message, get_about_command_message
 from src.utils.helpers import client_has_active_sub
 from src.utils.utils import generate_payment_sign_params
 
 
 bot = Bot(settings.bot_api_token)
 dp = Dispatcher(bot)
+
+
+@dp.message_handler(commands=['about'])
+async def about_command(message: Message):
+    message_models = get_about_command_message()
+    for model in message_models:
+        try:
+            await message.answer(model.text, reply_markup=model.keyboard)
+            await asyncio.sleep(8)
+        except BotBlocked:
+            break
 
 
 @dp.message_handler(commands=['start'])

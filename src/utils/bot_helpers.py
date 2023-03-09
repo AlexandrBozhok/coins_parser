@@ -8,7 +8,7 @@ from src.schemas.bot import MessageModel
 
 def get_bot_commands():
     bot_commands = [
-        # BotCommand(command="/about", description="Як це працює?"),
+        BotCommand(command="/about", description="Як це працює?"),
         BotCommand(command="/join", description="Приєднатись до каналу"),
         BotCommand(command="/info", description="Інформація про Вашу підписку"),
         BotCommand(command="/payment", description="Сплатити підписку на сервіс"),
@@ -131,6 +131,23 @@ def get_join_command_message(has_subscribe: bool, invite_link: str | None = None
            f'на канал.'
 
     return MessageModel(text=text)
+
+
+def get_about_command_message() -> list[MessageModel]:
+    text = f'Отже, як це все працює?\n' \
+           f'Бот в реальному часі постійно слідкує за оновленнями на сайті інтернет магазину НБУ. ' \
+           f'Як тільки з\'являється новий товар - в закритий канал відправляється сповіщення з інформацією ' \
+           f'про нього, а саме: фото, назва, ціна і посилання на сторінку товару.'
+
+    text2 = f'Щоб потрапити в канал, потрібно сплатити підписку, після чого бот відправить вам ' \
+            f'посилання-запрошення на канал. Вам потрібно буде відправити запит на приєднання, а система ' \
+            f'автоматично додасть вас в спільноту у випадку активної підписки.'
+
+    text3 = f'Підписка діє 1 (один) календарний місяць. Ближче до наступної оплати, Вам буде відправлено ' \
+            f'сповіщення про необхідність продовження підписки. У випадку, коли підписка не подовжилась - ' \
+            f'телеграм бот закриє доступ до каналу. Але ви зможете знову приєднатись після наступної оплати.'
+
+    return [MessageModel(text=text), MessageModel(text=text2), MessageModel(text=text3)]
 
 
 def get_info_command_message(has_subscribe: bool, subscribe_expired_at: datetime.datetime):
