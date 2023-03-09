@@ -10,9 +10,9 @@ def generate_payment_sign_params(order_reference: str):
         merchant_domain_name=settings.merchant_domain_name,
         order_reference=order_reference,
         order_date=int(datetime.datetime.now().timestamp()),
-        amount=1,
+        amount=settings.service_price,
         currency='UAH',
-        product_name='Підписка на оновлення інтернет магазину',
+        product_name=settings.service_name,
         product_count=1,
-        product_price=1
+        product_price=settings.service_price
     )

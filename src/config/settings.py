@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     merchant_domain_name: str
     service_url: str
 
+    # Service
+    service_name: str
+    service_price: int
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
