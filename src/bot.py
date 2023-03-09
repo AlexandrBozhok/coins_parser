@@ -39,10 +39,14 @@ async def about_command(message: Message):
 async def start(message: Message):
     is_exists = await ClientCRUD.exists_by_chat_id(message.from_user.id)
     if not is_exists:
-        new_client = ClientIn(chat_id=message.from_user.id)
+        new_client = ClientIn(
+            first_name=message.from_user.first_name,
+            last_name=message.from_user.last_name,
+            username=message.from_user.username,
+            chat_id=message.from_user.id
+        )
         client = await ClientCRUD.insert_one(new_client)
         logging.info(f'Add new client: {client}')
-    print(f'USER_ID: {message.from_user.id}')
     message_models = get_start_message(message)
     for model in message_models:
         try:
@@ -63,6 +67,7 @@ async def create_payment(message: Message):
     order_reference = str(ObjectId())
     payment_sign_params = generate_payment_sign_params(order_reference)
     payment_url = PaymentController.create_invoice_url(payment_sign_params)
+    logging.info(f'Create New payment. User: {message.from_user}')
     if payment_url:
         message_model = get_payment_message(payment_url)
         try:
