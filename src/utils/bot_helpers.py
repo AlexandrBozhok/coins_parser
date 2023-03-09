@@ -2,6 +2,7 @@ import datetime
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, BotCommand
 
+from src.config.settings import settings
 from src.schemas.mongo_collections import Product
 from src.schemas.bot import MessageModel
 
@@ -27,14 +28,15 @@ def get_cmd_list_message() -> MessageModel:
 
 
 def get_start_message(message: Message) -> list[MessageModel]:
-    service_price = 100
     text = f'Вітаю, {message.from_user.full_name}!\n\n' \
            f'НБУ запустив нумізматичний інтернет магазин https://coins.bank.gov.ua, ' \
            f'але товари на ньому з\'являються в різний час, в обмеженій кількості та ' \
            f'швидко продаються. Цей бот бере на себе моніторинг каталогу монет, ' \
            f'і одразу сповіщає Вас при надходженні нової позиції, щоб Ви встигли зробити замовлення ' \
            f'витрачаючи мінімум зусиль.\n\n' \
-           f'<b>Щомісячна вартість підписки становить {service_price} грн.</b>\n\n'
+           f'Наразі магазин НБУ працює в тестовому режимі, тому вони можуть робити зміни, які впливають ' \
+           f'на роботу бота. Такі "вдосконалення" будуть впроваджуватись максимально швидко.\n\n' \
+           f'<b>Щомісячна вартість підписки становить {settings.service_price} грн.</b>\n\n'
 
     cmd_list_message_model = get_cmd_list_message()
 
