@@ -128,10 +128,13 @@ async def chat_join_approve_or_decline(update: types.ChatJoinRequest):
     user_id = update['from']['id']
     client = await ClientCRUD.get_one(chat_id=user_id)
     has_subscribe = client_has_active_sub(client)
-    if has_subscribe:
-        await update.approve()
-    else:
-        await update.decline()
+    try:
+        if has_subscribe:
+            await update.approve()
+        else:
+            await update.decline()
+    except Exception as e:
+        logging.error(f'Error with approve or decline invite. Traceback: {e}')
 
 
 @dp.message_handler()
