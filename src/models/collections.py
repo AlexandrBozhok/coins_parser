@@ -1,7 +1,6 @@
 from motor.core import AgnosticCollection, AgnosticDatabase
 
-from config.settings import settings
-from initializer import mongo_client
+from src.initializer import mongo_client
 
 
 # Databases

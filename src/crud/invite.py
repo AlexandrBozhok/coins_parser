@@ -1,6 +1,6 @@
 from typing import Any
 
-from models.collections import InviteCollection
+from src.models.collections import InviteCollection
 from src.schemas.mongo_collections import Invite
 
 

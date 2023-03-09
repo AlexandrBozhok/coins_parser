@@ -2,7 +2,7 @@ from typing import Any
 
 from bson import ObjectId
 
-from models.collections import CoinsCollection
+from src.models.collections import CoinsCollection
 from src.schemas.mongo_collections import Product, ProductUpdateFields
 
 

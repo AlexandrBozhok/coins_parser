@@ -6,18 +6,18 @@ from aiogram import types, Dispatcher, Bot
 from bson import ObjectId
 from fastapi import FastAPI, Request
 
-from config.settings import settings
-from bot import bot, dp, send_approve_payment_msg, remove_user_from_channel
-from crud.payment import PaymentCRUD
-from crud.product import ProductCRUD
-from crud.client import ClientCRUD
-from schemas.payment import PaymentApproveParams
-from services.payment_controller import PaymentController
-from services.product_parser import parser_processing
+from src.config.settings import settings
+from src.bot import bot, dp, send_approve_payment_msg, remove_user_from_channel
+from src.crud.payment import PaymentCRUD
+from src.crud.product import ProductCRUD
+from src.crud.client import ClientCRUD
+from src.schemas.payment import PaymentApproveParams
+from src.services.payment_controller import PaymentController
+from src.services.product_parser import parser_processing
 from src.schemas.mongo_collections import ClientIn, ClientUpdateFields, Payment, PaymentIn, PaymentUpdateFields
-from utils.bot_helpers import get_bot_commands
-from utils.enums import ExpireDateAction
-from utils.helpers import update_client_expire_date
+from src.utils.bot_helpers import get_bot_commands
+from src.utils.enums import ExpireDateAction
+from src.utils.helpers import update_client_expire_date
 
 app = FastAPI()
 

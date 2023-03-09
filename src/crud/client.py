@@ -2,7 +2,7 @@ from typing import Any
 
 from bson import ObjectId
 
-from models.collections import ClientsCollection, PaymentsCollection
+from src.models.collections import ClientsCollection, PaymentsCollection
 from src.schemas.mongo_collections import Client, ClientIn, ClientOut, ClientUpdateFields
 
 

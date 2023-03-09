@@ -1,7 +1,7 @@
 import datetime
 
-from config.settings import settings
-from schemas.payment import PaymentSignParams
+from src.config.settings import settings
+from src.schemas.payment import PaymentSignParams
 
 
 def generate_payment_sign_params(order_reference: str):

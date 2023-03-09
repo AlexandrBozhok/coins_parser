@@ -2,7 +2,7 @@ import datetime
 
 from monthdelta import monthdelta
 
-from crud.client import ClientCRUD
+from src.crud.client import ClientCRUD
 from src.schemas.mongo_collections import ClientUpdateFields, ClientOut
 from src.utils.enums import ExpireDateAction
 

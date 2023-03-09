@@ -7,17 +7,17 @@ from aiogram.types import Message
 from aiogram.utils.exceptions import BotBlocked
 from bson import ObjectId
 
-from config.settings import settings
-from crud.client import ClientCRUD
-from crud.invite import InviteCRUD
-from crud.payment import PaymentCRUD
-from schemas.mongo_collections import ClientIn, PaymentIn, Product, Invite
-from services.payment_controller import PaymentController
-from utils.bot_helpers import get_start_message, get_payment_message, success_payment_and_invite_messages, \
+from src.config.settings import settings
+from src.crud.client import ClientCRUD
+from src.crud.invite import InviteCRUD
+from src.crud.payment import PaymentCRUD
+from src.schemas.mongo_collections import ClientIn, PaymentIn, Product, Invite
+from src.services.payment_controller import PaymentController
+from src.utils.bot_helpers import get_start_message, get_payment_message, success_payment_and_invite_messages, \
     kick_user_from_channel_msg, find_product_message, get_join_command_message, get_info_command_message, \
     get_unknown_command_message, get_support_command_message
-from utils.helpers import client_has_active_sub
-from utils.utils import generate_payment_sign_params
+from src.utils.helpers import client_has_active_sub
+from src.utils.utils import generate_payment_sign_params
 
 
 bot = Bot(settings.bot_api_token)

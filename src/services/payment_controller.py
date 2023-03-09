@@ -5,7 +5,7 @@ from typing import Any
 
 import requests
 
-from config.settings import settings
+from src.config.settings import settings
 from src.schemas.payment import PaymentSignParams, PaymentInvoiceParams, PaymentApproveParams, ServerApproveResponse
 
 

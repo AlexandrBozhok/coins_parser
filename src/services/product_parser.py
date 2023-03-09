@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from src.bot import send_find_product_message
 from src.config.settings import settings
-from crud.product import ProductCRUD
+from src.crud.product import ProductCRUD
 from src.schemas.mongo_collections import Product, ProductUpdateFields
 
 
