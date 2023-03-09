@@ -128,8 +128,8 @@ def get_join_command_message(has_subscribe: bool, invite_link: str | None = None
 
         return MessageModel(text=text, keyboard=kb_markup)
 
-    text = f'Нажаль, у Вас немає активної підписки.\n' \
-           f'Скористайтесь командою /payment для оплати, щоб отримати посилання-запрошення ' \
+    text = f'Нажаль, у Вас немає активної підписки.' \
+           f'Скористайтесь командою \n/payment для оплати, щоб отримати посилання-запрошення ' \
            f'на канал.'
 
     return MessageModel(text=text)
