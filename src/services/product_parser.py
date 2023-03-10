@@ -1,5 +1,4 @@
 import datetime
-import logging
 import re
 from typing import Any
 
@@ -8,7 +7,7 @@ from bs4 import BeautifulSoup, Tag
 from pydantic import ValidationError
 
 from src.bot import send_find_product_message
-from src.config.settings import settings
+from src.config.settings import settings, logger
 from src.crud.product import ProductCRUD
 from src.schemas.mongo_collections import Product, ProductUpdateFields
 
@@ -43,7 +42,7 @@ class ProductParser:
                 pagination_items = pagination.find_all('a')
                 pagination_urls = list({f'{self.bank_base_url}{item["href"]}' for item in pagination_items})
         except AttributeError:
-            logging.error('Catalog page is unavailable. Main block with id=block not found.')
+            logger.error('Catalog page is unavailable. Main block with id=block not found.')
 
         return pagination_urls
 
@@ -82,10 +81,10 @@ class ProductParser:
                     data['circulation'] = coin_params[1].text
                     data['year_of_production'] = coin_params[2].text
                 else:
-                    logging.info(f'Product {data["name"]} has problem with parsing params. '
+                    logger.info(f'Product {data["name"]} has problem with parsing params. '
                                  f'Coin_params: {coin_params}')
         except Exception as e:
-            print(f'Error: {e}')
+            logger.error(f'Prseng error: {e}')
 
         return data
 
@@ -102,7 +101,7 @@ class ProductParser:
                     products.append(Product(**product_data))
                 except ValidationError as e:
                     error_data = e.errors()[0]
-                    logging.error(f'Validation error. Field: {error_data.get("loc")}. '
+                    logger.error(f'Validation error. Field: {error_data.get("loc")}. '
                                   f'Message: {error_data.get("msg")}.\n'
                                   f'Product data: {product_data}')
             return products
@@ -115,7 +114,7 @@ class ProductParser:
             soup = await self.__scrap_page(url)
             pages_soup.append(soup)
 
-        logging.info(f'Catalog page loaded. Pages count: {len(pages_soup)}')
+        logger.info(f'Catalog page loaded. Pages count: {len(pages_soup)}')
 
         products = []
         for page in pages_soup:
@@ -133,7 +132,7 @@ async def __find_new_products(products: list[Product], found_products: list[dict
 async def parser_processing():
     parser = ProductParser()
     products = await parser.get_all()
-    logging.info(f'Product count ready to buy: {len(products)}')
+    logger.info(f'Product count ready to buy: {len(products)}')
     product_ids = [product.bank_product_id for product in products]
 
     found_products = await ProductCRUD.get_many(
@@ -180,6 +179,6 @@ async def parser_processing():
     )
     if new_products:
         await ProductCRUD.insert_many(new_products)
-        logging.info('Added new products %s' % [item.name for item in new_products])
+        logger.info('Added new products %s' % [item.name for item in new_products])
     else:
-        logging.info('The script has completed work. No new coins were added')
+        logger.info('The script has completed work. No new coins were added')

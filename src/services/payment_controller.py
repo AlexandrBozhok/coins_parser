@@ -1,11 +1,10 @@
 import datetime
 import hmac
-import logging
 from typing import Any
 
 import requests
 
-from src.config.settings import settings
+from src.config.settings import settings, logger
 from src.schemas.payment import PaymentSignParams, PaymentInvoiceParams, PaymentApproveParams, ServerApproveResponse
 
 
@@ -15,7 +14,6 @@ class PaymentController:
     @classmethod
     def _create_signature(cls, secret_key: str, sign_values: list[Any]) -> str:
         sign = ';'.join([str(item) for item in sign_values])
-        print(sign)
         return hmac.new(secret_key.encode('utf-8'), sign.encode('utf-8'), 'MD5').hexdigest()
 
     @classmethod
@@ -31,9 +29,9 @@ class PaymentController:
         # {'reasonCode': 1109, 'reason': 'Message Error'}
         # {'invoiceUrl': None, 'reason': 'Duplicate Order ID', 'reasonCode': 1112}
         if 'invoiceUrl' in response:
-            logging.info(f'New payment url: {response["invoiceUrl"]}')
+            logger.info(f'New payment url: {response["invoiceUrl"]}')
             return response['invoiceUrl']
-        logging.error(f'Error on getting invoiceUrl from provider. Message: {response["reason"]}')
+        logger.error(f'Error on getting invoiceUrl from provider. Message: {response["reason"]}')
         return
 
     @classmethod

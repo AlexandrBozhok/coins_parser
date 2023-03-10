@@ -1,13 +1,12 @@
 import asyncio
 import datetime
-import logging
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import Message
 from aiogram.utils.exceptions import BotBlocked
 from bson import ObjectId
 
-from src.config.settings import settings
+from src.config.settings import settings, logger
 from src.crud.client import ClientCRUD
 from src.crud.invite import InviteCRUD
 from src.crud.payment import PaymentCRUD
@@ -46,7 +45,7 @@ async def start(message: Message):
             chat_id=message.from_user.id
         )
         client = await ClientCRUD.insert_one(new_client)
-        logging.info(f'Add new client: {client}')
+        logger.info(f'Add new client: {client}')
     message_models = get_start_message(message)
     for model in message_models:
         try:
@@ -67,7 +66,7 @@ async def create_payment(message: Message):
     order_reference = str(ObjectId())
     payment_sign_params = generate_payment_sign_params(order_reference)
     payment_url = PaymentController.create_invoice_url(payment_sign_params)
-    logging.info(f'Create New payment. User: {message.from_user}')
+    logger.info(f'Create New payment. User: {message.from_user}')
     if payment_url:
         message_model = get_payment_message(payment_url)
         try:
@@ -81,7 +80,7 @@ async def create_payment(message: Message):
             invoice_url=payment_url
         )
         result = await PaymentCRUD.insert_one(new_payment)
-        logging.info(f'Inserted new payment {result}')
+        logger.info(f'Inserted new payment {result}')
 
 
 @dp.message_handler(commands=['join'])
@@ -124,7 +123,7 @@ async def support_command(message: Message):
 @dp.chat_join_request_handler()
 async def chat_join_approve_or_decline(update: types.ChatJoinRequest):
     """ Відслідковує запити на приєднання до каналу, якщо юзер сплатив підписку - підтверджує інвайт """
-    print(update)
+    logger.info(f'New chat join request: {update}')
     user_id = update['from']['id']
     client = await ClientCRUD.get_one(chat_id=user_id)
     has_subscribe = client_has_active_sub(client)
@@ -134,7 +133,7 @@ async def chat_join_approve_or_decline(update: types.ChatJoinRequest):
         else:
             await update.decline()
     except Exception as e:
-        logging.error(f'Error with approve or decline invite. Traceback: {e}')
+        logger.error(f'Error with approve or decline invite. Traceback: {e}')
 
 
 @dp.message_handler()
