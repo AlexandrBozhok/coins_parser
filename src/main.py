@@ -102,5 +102,12 @@ async def start_parser():
     print(f'Parse finished at {time.time() - t} seconds.')
 
 
+@app.post('/service_url_test')
+async def service_url_test(request: Request):
+    data = await request.json()
+    print(data)
+    return 'OK'
+
+
 if __name__ == '__main__':
     uvicorn.run("main:app", reload=True)
