@@ -1,4 +1,5 @@
 import datetime
+import logging
 import time
 
 import uvicorn
@@ -68,7 +69,7 @@ async def approve_payment(request: Request):
             PaymentUpdateFields(**{'status': status})
         )
         if result.modified_count > 0:
-            if status == 'Approved':  # Refunded
+            if status == 'Approved':
                 await send_approve_payment_msg(payment['client_id'], payment['_id'])
                 await update_client_expire_date(payment['client_id'], ExpireDateAction.add)
             elif status == 'Refunded':
@@ -82,9 +83,16 @@ async def check_subscribe():
     expired_subscribers = await ClientCRUD.get_many(
         filter={'expired_at': {'$lt': datetime.datetime.now()}}
     )
-    print(expired_subscribers)
+    logging.info(f'Rxpired subscribers: {expired_subscribers}')
     for sub in expired_subscribers:
-        await remove_user_from_channel(chat_id=settings.channel_id, user_id=sub.chat_id)
+        try:
+            chat_member = await bot.get_chat_member(chat_id=settings.channel_id, user_id=sub.chat_id)
+            if chat_member['status'] == 'member':
+                logging.info(f'Remove expired subscriber: first_name: {sub.first_name}, '
+                             f'last_name: {sub.last_name}, username: {sub.username}')
+                await remove_user_from_channel(chat_id=settings.channel_id, user_id=sub.chat_id)
+        except Exception as e:
+            logging.error(f'Error in check_subscribe method. Traceback: {e}')
 
 
 @app.get('/start_parser')
