@@ -5,7 +5,7 @@ from src.initializer import mongo_client
 
 
 # Databases
-db_name = 'coins-db' if settings.develop else 'dev_coins_db'
+db_name = 'dev_coins_db' if settings.develop else 'coins-db'
 CoinsDB: AgnosticDatabase = mongo_client[db_name]
 
 
