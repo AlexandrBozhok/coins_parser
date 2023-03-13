@@ -5,6 +5,7 @@ from pydantic import BaseSettings, BaseModel
 
 
 class Settings(BaseSettings):
+    develop: bool
     nbu_shop_base_url: str
 
     # Telegram Bot
