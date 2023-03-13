@@ -14,7 +14,7 @@ from src.schemas.mongo_collections import ClientIn, PaymentIn, Product, Invite
 from src.services.payment_controller import PaymentControllerV2
 from src.utils.bot_helpers import get_start_message, get_payment_message, success_payment_and_invite_messages, \
     kick_user_from_channel_msg, find_product_message, get_join_command_message, get_info_command_message, \
-    get_unknown_command_message, get_support_command_message, get_about_command_message
+    get_unknown_command_message, get_support_command_message, get_about_command_message, get_chat_join_request_message
 from src.utils.helpers import client_has_active_sub
 from src.utils.utils import generate_fondy_payment_params
 
@@ -131,6 +131,9 @@ async def chat_join_approve_or_decline(update: types.ChatJoinRequest):
             await update.approve()
         else:
             await update.decline()
+
+        message_model = get_chat_join_request_message(is_approved=has_subscribe)
+        await bot.send_message(chat_id=user_id, text=message_model.text)
     except Exception as e:
         logger.error(f'Error with approve or decline invite. Traceback: {e}')
 

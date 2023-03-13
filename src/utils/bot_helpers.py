@@ -176,3 +176,12 @@ def get_support_command_message() -> MessageModel:
     text = f'Ваші питання та пропозиції пишіть в особисті повідомлення адміну:\n' \
            f'@alex_support_man'
     return MessageModel(text=text)
+
+
+def get_chat_join_request_message(is_approved: bool) -> MessageModel:
+    if is_approved:
+        text = f'Запит на приєднання до каналу схвалено. Вдалих покупок в інтернет магазині!'
+    else:
+        text = f'Нажаль, запит на приєднання до каналу відхилено - у Вас немає активної підписки.'
+
+    return MessageModel(text=text)
