@@ -86,8 +86,8 @@ async def fondy_approve_payment(request: Request):
         )
         if result.modified_count > 0:
             if status == 'approved':
-                await send_approve_payment_msg(payment['client_id'], payment['_id'])
                 await update_client_expire_date(payment['client_id'], ExpireDateAction.add)
+                await send_approve_payment_msg(payment['client_id'], payment['_id'])
             elif status == 'reversed':
                 await update_client_expire_date(payment['client_id'], ExpireDateAction.subtract)
         else:
