@@ -11,13 +11,12 @@ from src.crud.client import ClientCRUD
 from src.crud.invite import InviteCRUD
 from src.crud.payment import PaymentCRUD
 from src.schemas.mongo_collections import ClientIn, PaymentIn, Product, Invite
-from src.services.payment_controller import PaymentController
+from src.services.payment_controller import PaymentControllerV2
 from src.utils.bot_helpers import get_start_message, get_payment_message, success_payment_and_invite_messages, \
     kick_user_from_channel_msg, find_product_message, get_join_command_message, get_info_command_message, \
     get_unknown_command_message, get_support_command_message, get_about_command_message
 from src.utils.helpers import client_has_active_sub
-from src.utils.utils import generate_payment_sign_params
-
+from src.utils.utils import generate_fondy_payment_params
 
 bot = Bot(settings.bot_api_token)
 dp = Dispatcher(bot)
@@ -63,20 +62,20 @@ async def start(message: Message):
 @dp.message_handler(commands=['payment'])
 async def create_payment(message: Message):
     client = await ClientCRUD.get_one(chat_id=message.from_user.id)
-    order_reference = str(ObjectId())
-    payment_sign_params = generate_payment_sign_params(order_reference)
-    payment_url = PaymentController.create_invoice_url(payment_sign_params)
-    logger.info(f'Create New payment. User: {message.from_user}')
+    order_id = str(ObjectId())
+    payment_params = generate_fondy_payment_params(order_id)
+    payment_url = PaymentControllerV2.create_invoice_url(payment_params)
     if payment_url:
+        logger.info(f'Create New payment. User: {message.from_user}')
         message_model = get_payment_message(payment_url)
         try:
             await message.answer(text=message_model.text, reply_markup=message_model.keyboard)
         except BotBlocked:
             pass
         new_payment = PaymentIn(
-            id=order_reference,
+            id=order_id,
             client_id=str(client.id),
-            amount=payment_sign_params.amount,
+            amount=payment_params.amount,
             invoice_url=payment_url
         )
         result = await PaymentCRUD.insert_one(new_payment)

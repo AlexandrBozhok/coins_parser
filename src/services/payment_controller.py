@@ -1,11 +1,13 @@
 import datetime
 import hmac
 from typing import Any
+from cloudipsp import Api, Checkout
 
 import requests
 
 from src.config.settings import settings, logger
-from src.schemas.payment import PaymentSignParams, PaymentInvoiceParams, PaymentApproveParams, ServerApproveResponse
+from src.schemas.payment import PaymentSignParams, PaymentInvoiceParams, PaymentApproveParams, ServerApproveResponse, \
+    FondyPaymentParams
 
 
 class PaymentController:
@@ -64,3 +66,17 @@ class PaymentController:
             signature=signature
         )
         return approve_response.dict(by_alias=True)
+
+
+class PaymentControllerV2:
+    # Fondy
+
+    @classmethod
+    def create_invoice_url(cls, params: FondyPaymentParams):
+        api = Api(
+            merchant_id=settings.fondy_merchant_id,
+            secret_key=settings.fondy_secret_key
+        )
+        checkout = Checkout(api=api)
+        url = checkout.url(params.dict()).get('checkout_url')
+        return url

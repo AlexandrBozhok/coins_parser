@@ -77,3 +77,15 @@ class ServerApproveResponse(BaseModel):
     class Config:
         allow_population_by_field_name = True
         alias_generator = to_lower_camel
+
+
+class FondyPaymentParams(BaseModel):
+    order_id: str
+    currency: str = 'UAH'
+    amount: int
+    lang: str = 'uk'
+    lifetime: int = 36000
+
+    @validator('amount')
+    def set_amount(cls, v):
+        return v * 100  # Переводимо суму в копійки

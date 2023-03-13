@@ -3,18 +3,15 @@ import time
 
 import uvicorn
 from aiogram import types, Dispatcher, Bot
-from bson import ObjectId
 from fastapi import FastAPI, Request
 
 from src.config.settings import settings, logger
 from src.bot import bot, dp, send_approve_payment_msg, remove_user_from_channel
 from src.crud.payment import PaymentCRUD
-from src.crud.product import ProductCRUD
 from src.crud.client import ClientCRUD
-from src.schemas.payment import PaymentApproveParams
 from src.services.payment_controller import PaymentController
 from src.services.product_parser import parser_processing
-from src.schemas.mongo_collections import ClientIn, ClientUpdateFields, Payment, PaymentIn, PaymentUpdateFields
+from src.schemas.mongo_collections import PaymentUpdateFields
 from src.utils.bot_helpers import get_bot_commands
 from src.utils.enums import ExpireDateAction
 from src.utils.helpers import update_client_expire_date
@@ -76,6 +73,29 @@ async def approve_payment(request: Request):
     return approve_response
 
 
+@app.post('/payments/fondy/approve')
+async def fondy_approve_payment(request: Request):
+    data = await request.json()
+    payment = await PaymentCRUD.get_one(data['order_id'])
+    logger.info(f'Create new payment: {payment}')
+    if payment:
+        status = data['order_status']
+        result = await PaymentCRUD.update_one(
+            payment['_id'],
+            PaymentUpdateFields(**{'status': status})
+        )
+        if result.modified_count > 0:
+            if status == 'approved':
+                await send_approve_payment_msg(payment['client_id'], payment['_id'])
+                await update_client_expire_date(payment['client_id'], ExpireDateAction.add)
+            elif status == 'reversed':
+                await update_client_expire_date(payment['client_id'], ExpireDateAction.subtract)
+        else:
+            logger.warning(f'Problem in update payment, cant modify. Callback data from fondy:\n{data}')
+
+    return 'OK'
+
+
 @app.get('/check_subscribe')
 async def check_subscribe():
     expired_subscribers = await ClientCRUD.get_many(
@@ -87,7 +107,7 @@ async def check_subscribe():
             chat_member = await bot.get_chat_member(chat_id=settings.channel_id, user_id=sub.chat_id)
             if chat_member['status'] == 'member':
                 logger.info(f'Remove expired subscriber: first_name: {sub.first_name}, '
-                             f'last_name: {sub.last_name}, username: {sub.username}')
+                            f'last_name: {sub.last_name}, username: {sub.username}')
                 await remove_user_from_channel(chat_id=settings.channel_id, user_id=sub.chat_id)
         except Exception as e:
             logger.error(f'Error in check_subscribe method. Traceback: {e}')
@@ -97,7 +117,7 @@ async def check_subscribe():
 async def start_parser():
     t = time.time()
     await parser_processing()
-    logger.info(f'Parse finished at {time.time() - t} seconds.')
+    logger.info(f'Parse finished at {round((time.time() - t), 2)} seconds.')
 
 
 if __name__ == '__main__':

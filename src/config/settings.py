@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     service_name: str
     service_price: int
 
+    # Fondy
+    fondy_merchant_id: str
+    fondy_secret_key: str
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

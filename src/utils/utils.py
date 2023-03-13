@@ -1,7 +1,7 @@
 import datetime
 
 from src.config.settings import settings
-from src.schemas.payment import PaymentSignParams
+from src.schemas.payment import PaymentSignParams, FondyPaymentParams
 
 
 def generate_payment_sign_params(order_reference: str):
@@ -15,4 +15,11 @@ def generate_payment_sign_params(order_reference: str):
         product_name=settings.service_name,
         product_count=1,
         product_price=settings.service_price
+    )
+
+
+def generate_fondy_payment_params(order_id: str):
+    return FondyPaymentParams(
+        order_id=order_id,
+        amount=settings.service_price
     )
