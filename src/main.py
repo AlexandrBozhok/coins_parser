@@ -4,9 +4,10 @@ import time
 import uvicorn
 from aiogram import types, Dispatcher, Bot
 from fastapi import FastAPI, Request
+from starlette.background import BackgroundTasks
 
 from src.config.settings import settings, logger
-from src.bot import bot, dp, send_approve_payment_msg, remove_user_from_channel
+from src.bot import bot, dp, send_approve_payment_msg, remove_user_from_channel, send_report
 from src.crud.payment import PaymentCRUD
 from src.crud.client import ClientCRUD
 from src.services.payment_controller import PaymentController
@@ -45,14 +46,6 @@ async def bot_webhook(update: dict):
 
 @app.post('/payments/approve')
 async def approve_payment(request: Request):
-    # {'merchantAccount': 'freelance_user_640614adde9d1', 'orderReference': '64076226c240de74e32b1a3b',
-    #  'merchantSignature': '359c05b9a4870947942b2bff139a9e58', 'amount': 1, 'currency': 'UAH', 'authCode': '332226',
-    #  'email': 'shurick672@gmail.com', 'phone': '380989866672', 'createdDate': 1678205498, 'processingDate': 1678205507,
-    #  'cardPan': '', 'cardType': 'MasterCard', 'issuerBankCountry': 'Ukraine',
-    #  'issuerBankName': 'COMMERCIAL BANK PRIVATBANK', 'recToken': '', 'transactionStatus': 'Approved', 'reason': 'Ok',
-    #  'reasonCode': 1100, 'fee': 0.02, 'paymentSystem': 'googlePay', 'acquirerBankName': 'WayForPay',
-    #  'cardProduct': 'debit', 'clientName': 'forward672',
-    #  'products': [{'name': 'Підписка на оновлення інтернет магазину', 'price': 1, 'count': 1}]}
     data = await request.json()
     approve_response = PaymentController.create_approve_response(data)
     payment = await PaymentCRUD.get_one(data['orderReference'])
@@ -96,12 +89,17 @@ async def fondy_approve_payment(request: Request):
     return 'OK'
 
 
+@app.get('/report')
+async def report(background_tasks: BackgroundTasks):
+    background_tasks.add_task(send_report)
+    return 'OK'
+
+
 @app.get('/check_subscribe')
 async def check_subscribe():
     expired_subscribers = await ClientCRUD.get_many(
         filter={'expired_at': {'$lt': datetime.datetime.now()}}
     )
-    logger.info(f'Rxpired subscribers: {expired_subscribers}')
     for sub in expired_subscribers:
         try:
             chat_member = await bot.get_chat_member(chat_id=settings.channel_id, user_id=sub.chat_id)

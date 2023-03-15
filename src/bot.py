@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import time
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import Message
@@ -10,11 +11,13 @@ from src.config.settings import settings, logger
 from src.crud.client import ClientCRUD
 from src.crud.invite import InviteCRUD
 from src.crud.payment import PaymentCRUD
+from src.crud.product import ProductCRUD
 from src.schemas.mongo_collections import ClientIn, PaymentIn, Product, Invite
 from src.services.payment_controller import PaymentControllerV2
 from src.utils.bot_helpers import get_start_message, get_payment_message, success_payment_and_invite_messages, \
     kick_user_from_channel_msg, find_product_message, get_join_command_message, get_info_command_message, \
-    get_unknown_command_message, get_support_command_message, get_about_command_message, get_chat_join_request_message
+    get_unknown_command_message, get_support_command_message, get_about_command_message, get_chat_join_request_message, \
+    report_notification_message
 from src.utils.helpers import client_has_active_sub
 from src.utils.utils import generate_fondy_payment_params
 
@@ -220,3 +223,26 @@ async def remove_user_from_channel(chat_id: str, user_id: int):
         )
     except BotBlocked:
         pass
+
+
+async def send_report():
+    start_time = time.time()
+    today = datetime.date.today()
+    start_dt = datetime.datetime.combine(today, datetime.time.min)
+    end_dt = datetime.datetime.combine(today + datetime.timedelta(days=1), datetime.time.min)
+    new_products = await ProductCRUD.get_many(filter={
+        'available_from': {'$gte': start_dt, '$lt': end_dt}
+    })
+    cursor = await ClientCRUD.get_many(
+        filter={'expired_at': {'$gte': datetime.datetime.now()}},
+        cursor_mode=True
+    )
+    message_model = report_notification_message(new_products=new_products)
+    async for client in cursor:
+        try:
+            await bot.send_message(chat_id=client['chat_id'], text=message_model.text)
+        except BotBlocked:
+            pass
+
+    logger.info(f'Task send report notifications completed work at '
+                f'{round(time.time() - start_time, 2)} sec.')

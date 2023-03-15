@@ -25,8 +25,11 @@ class ClientCRUD:
         return
 
     @classmethod
-    async def get_many(cls, filter: dict[str, Any], with_payments=False):
+    async def get_many(cls, filter: dict[str, Any], with_payments=False, cursor_mode=False):
         cursor = ClientsCollection.find(filter)
+        if cursor_mode:
+            return cursor
+
         if with_payments:
             clients = []
             async for item in cursor:

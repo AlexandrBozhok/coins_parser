@@ -161,7 +161,10 @@ async def parser_processing():
         )
         await ProductCRUD.update_one(
             product_id=product['_id'],
-            update_fields=ProductUpdateFields(sold_out=False)
+            update_fields=ProductUpdateFields(
+                available_from=datetime.datetime.now(),
+                sold_out=False
+            )
         )
 
     # Оновлюємо поле updated для тих товарів, які є в каталозі

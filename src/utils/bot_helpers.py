@@ -185,3 +185,13 @@ def get_chat_join_request_message(is_approved: bool) -> MessageModel:
         text = f'Нажаль, запит на приєднання до каналу відхилено - у Вас немає активної підписки.'
 
     return MessageModel(text=text)
+
+
+def report_notification_message(new_products: list[Product]) -> MessageModel:
+    text = f'Надсилаю Вам щоденний звіт по оновленням інтернет магазину.\n'
+    if not new_products:
+        text += f'Сьогодні нових товарів в інтернет магазині не надходило.'
+    else:
+        text += f'Сьогодні було додано нових товарів {len(new_products)} шт.'
+
+    return MessageModel(text=text)

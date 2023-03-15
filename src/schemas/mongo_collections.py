@@ -8,6 +8,7 @@ from pydantic.types import PositiveInt
 
 class Product(BaseModel):
     created: datetime.datetime = None
+    available_from: datetime.datetime = None
     updated: datetime.datetime = None
     bank_product_id: int
     name: str
@@ -19,12 +20,13 @@ class Product(BaseModel):
     year_of_production: int | None = None
     sold_out: bool = False
 
-    @validator('created', 'updated', pre=True, always=True)
+    @validator('created', 'available_from', 'updated', pre=True, always=True)
     def set_dates(cls, v):
         return v or datetime.datetime.now()
 
 
 class ProductUpdateFields(BaseModel):
+    available_from: datetime.datetime | None = None
     updated: datetime.datetime | None = None
     price: PositiveInt | None = None
     sold_out: bool | None = None
