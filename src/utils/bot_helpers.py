@@ -149,7 +149,9 @@ def get_about_command_message() -> list[MessageModel]:
             f'сповіщення про необхідність продовження підписки. У випадку, коли підписка не подовжилась - ' \
             f'телеграм бот закриє доступ до каналу. Але ви зможете знову приєднатись після наступної оплати.'
 
-    return [MessageModel(text=text), MessageModel(text=text2), MessageModel(text=text3)]
+    text4 = f'Кожен день ближче до 20:00 Ви будете отримувати щоденний звіт про нові надходження.'
+
+    return [MessageModel(text=text), MessageModel(text=text2), MessageModel(text=text3), MessageModel(text=text4)]
 
 
 def get_info_command_message(has_subscribe: bool, subscribe_expired_at: datetime.datetime):
