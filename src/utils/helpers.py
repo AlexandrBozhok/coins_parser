@@ -11,7 +11,7 @@ async def update_client_expire_date(client_id: str, action: ExpireDateAction):
     client = await ClientCRUD.get_one(id=client_id)
     if client:
         if action == 'add':
-            new_expire_date = client.expired_at + monthdelta(1)
+            new_expire_date = datetime.datetime.now() + monthdelta(1)
         else:
             new_expire_date = client.expired_at - monthdelta(1)
 
