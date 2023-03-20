@@ -178,7 +178,7 @@ async def parser_processing():
     _check_product_age = 30
     await ProductCRUD.update_many(
         {'updated': {'$lt': datetime.datetime.now() - datetime.timedelta(minutes=_check_product_age)}},
-        ProductUpdateFields(sold_out=True)
+        ProductUpdateFields(updated=datetime.datetime.now(), sold_out=True)
     )
     if new_products:
         await ProductCRUD.insert_many(new_products)
