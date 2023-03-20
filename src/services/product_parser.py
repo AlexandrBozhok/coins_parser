@@ -124,8 +124,8 @@ class ProductParser:
         return products
 
 
-async def __find_new_products(products: list[Product], found_products: list[dict]) -> list[Product]:
-    found_products_ids = [item['bank_product_id'] for item in found_products]
+async def __find_new_products(products: list[Product], found_products: list[Product]) -> list[Product]:
+    found_products_ids = [item.bank_product_id for item in found_products]
     return [item for item in products if item.bank_product_id not in found_products_ids]
 
 
@@ -160,7 +160,7 @@ async def parser_processing():
             is_new=False
         )
         await ProductCRUD.update_one(
-            product_id=product['_id'],
+            product_id=product.id,
             update_fields=ProductUpdateFields(
                 available_from=datetime.datetime.now(),
                 sold_out=False

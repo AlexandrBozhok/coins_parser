@@ -3,7 +3,7 @@ from typing import Any
 from bson import ObjectId
 
 from src.models.collections import CoinsCollection
-from src.schemas.mongo_collections import Product, ProductUpdateFields
+from src.schemas.mongo_collections import Product, ProductUpdateFields, ProductOut
 
 
 class ProductCRUD:
@@ -23,7 +23,7 @@ class ProductCRUD:
         cursor = CoinsCollection.find(filter, need_fields)
         if return_cursor:
             return cursor
-        return [item async for item in cursor]
+        return [ProductOut(**item) async for item in cursor]
 
     @classmethod
     async def insert_many(cls, products: list[Product]) -> str | None:
