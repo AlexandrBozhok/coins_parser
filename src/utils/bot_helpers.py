@@ -2,7 +2,7 @@ import datetime
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, BotCommand
 
-from src.config.settings import settings
+from src.config.settings import settings, logger
 from src.schemas.mongo_collections import Product
 from src.schemas.bot import MessageModel
 
@@ -94,6 +94,7 @@ def kick_user_from_channel_msg() -> MessageModel:
 
 
 def find_product_message(product: Product, is_new: bool = True) -> MessageModel:
+    logger.info(f'Create message for product: {product}')
     if is_new:
         title = 'З\'явився новий товар на сайті!'
     else:
