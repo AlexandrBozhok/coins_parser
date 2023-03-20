@@ -175,7 +175,7 @@ async def parser_processing():
     )
 
     # Знаходимо товари, які не оновлювались протягом часу, зазначеного в змінній check_product_age
-    _check_product_age = 5
+    _check_product_age = 30
     await ProductCRUD.update_many(
         {'updated': {'$lt': datetime.datetime.now() - datetime.timedelta(minutes=_check_product_age)}},
         ProductUpdateFields(sold_out=True)
