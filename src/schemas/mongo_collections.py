@@ -34,6 +34,9 @@ class ProductUpdateFields(BaseModel):
     updated: datetime.datetime | None = None
     price: PositiveInt | None = None
     sold_out: bool | None = None
+    name: str | None = None
+    url: str | None = None
+    image_url: str | None = None
 
 
 class Payment(BaseModel):

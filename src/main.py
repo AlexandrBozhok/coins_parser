@@ -112,9 +112,9 @@ async def check_subscribe():
 
 
 @app.get('/start_parser')
-async def start_parser():
+async def start_parser(background_tasks: BackgroundTasks):
     t = time.time()
-    await parser_processing()
+    await parser_processing(background_tasks)
     logger.info(f'Parse finished at {round((time.time() - t), 2)} seconds.')
 
 

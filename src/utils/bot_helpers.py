@@ -94,7 +94,6 @@ def kick_user_from_channel_msg() -> MessageModel:
 
 
 def find_product_message(product: Product, is_new: bool = True) -> MessageModel:
-    logger.info(f'Create message for product: {product}')
     if is_new:
         title = 'З\'явився новий товар на сайті!'
     else:

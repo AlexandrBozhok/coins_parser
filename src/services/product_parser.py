@@ -5,6 +5,7 @@ from typing import Any
 import aiohttp
 from bs4 import BeautifulSoup, Tag
 from pydantic import ValidationError
+from starlette.background import BackgroundTasks
 
 from src.bot import send_find_product_message
 from src.config.settings import settings, logger
@@ -81,8 +82,9 @@ class ProductParser:
                     data['circulation'] = coin_params[1].text
                     data['year_of_production'] = coin_params[2].text
                 else:
-                    logger.info(f'Product {data["name"]} has problem with parsing params. '
-                                 f'Coin_params: {coin_params}')
+                    pass
+                    # logger.info(f'Product {data["name"]} has problem with parsing params. '
+                    #             f'Coin_params: {coin_params}')
         except Exception as e:
             logger.error(f'Prseng error: {e}')
 
@@ -129,7 +131,8 @@ async def __find_new_products(products: list[Product], found_products: list[Prod
     return [item for item in products if item.bank_product_id not in found_products_ids]
 
 
-async def parser_processing():
+async def parser_processing(background_tasks: BackgroundTasks):
+    dt_now = datetime.datetime.now()
     parser = ProductParser()
     products = await parser.get_all()
     logger.info(f'Product count ready to buy: {len(products)}')
@@ -142,46 +145,38 @@ async def parser_processing():
     new_products = await __find_new_products(products, found_products)
 
     for product in new_products:
-        await send_find_product_message(
-            chat_id=settings.channel_id,
-            product=product,
-            is_new=True
-        )
+        logger.info('Added new product %s' % product.name)
+        await ProductCRUD.insert_one(product)
+        background_tasks.add_task(send_find_product_message, settings.channel_id, product, True)
 
-    # Якщо товар є в каталозі сайту, а в базі він sold_out=True - змінюємо його статус
-    # і відправляємо сповіщення в бот
-    sold_products = await ProductCRUD.get_many(
-        filter={'bank_product_id': {'$in': product_ids}, 'sold_out': True}
-    )
-    for product in sold_products:
-        await send_find_product_message(
-            chat_id=settings.channel_id,
-            product=product,
-            is_new=False
+    for product in found_products:
+        update_params = ProductUpdateFields(
+            updated=dt_now
         )
+        # Якщо товар є в каталозі сайту, а в базі він sold_out=True - змінюємо його статус
+        # і відправляємо сповіщення в бот
+        if product.sold_out:
+            try:
+                parsed_product = [item for item in products if item.bank_product_id == product.bank_product_id][0]
+                update_params.name = parsed_product.name
+                update_params.price = parsed_product.price
+                update_params.url = parsed_product.url
+                update_params.image_url = parsed_product.image_url
+            except Exception as e:
+                logger.error(f'Error when select product by product_id: Traceback: {e}')
+            update_params.available_from = dt_now
+            update_params.sold_out = False
+
+            background_tasks.add_task(send_find_product_message, settings.channel_id, product, False)
+
         await ProductCRUD.update_one(
             product_id=product.id,
-            update_fields=ProductUpdateFields(
-                available_from=datetime.datetime.now(),
-                sold_out=False
-            )
+            update_fields=update_params
         )
 
-    # Оновлюємо поле updated для тих товарів, які є в каталозі
-    # FIXME: Цей запит виконується підряд 3 рази. Можна зробити один запит і фільтрувати по необхідним полям
-    await ProductCRUD.update_many(
-        filter={'bank_product_id': {'$in': product_ids}},
-        update_fields=ProductUpdateFields(updated=datetime.datetime.now())
-    )
-
-    # Знаходимо товари, які не оновлювались протягом часу, зазначеного в змінній check_product_age
+    # Знаходимо товари, які не оновлювались протягом часу, зазначеного в змінній _check_product_age
     _check_product_age = 30
     await ProductCRUD.update_many(
-        {'updated': {'$lt': datetime.datetime.now() - datetime.timedelta(minutes=_check_product_age)}},
-        ProductUpdateFields(updated=datetime.datetime.now(), sold_out=True)
+        {'updated': {'$lt': dt_now - datetime.timedelta(minutes=_check_product_age)}},
+        ProductUpdateFields(updated=dt_now, sold_out=True)
     )
-    if new_products:
-        await ProductCRUD.insert_many(new_products)
-        logger.info('Added new products %s' % [item.name for item in new_products])
-    else:
-        logger.info('The script has completed work. No new coins were added')
