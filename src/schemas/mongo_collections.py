@@ -25,11 +25,18 @@ class Product(BaseModel):
         return v or datetime.datetime.now()
 
 
+class ProductOut(Product):
+    id: Any = Field(alias='_id')
+
+
 class ProductUpdateFields(BaseModel):
     available_from: datetime.datetime | None = None
     updated: datetime.datetime | None = None
     price: PositiveInt | None = None
     sold_out: bool | None = None
+    name: str | None = None
+    url: str | None = None
+    image_url: str | None = None
 
 
 class Payment(BaseModel):

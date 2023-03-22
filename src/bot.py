@@ -4,7 +4,7 @@ import time
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import Message
-from aiogram.utils.exceptions import BotBlocked
+from aiogram.utils.exceptions import BotBlocked, RetryAfter
 from bson import ObjectId
 
 from src.config.settings import settings, logger
@@ -193,19 +193,18 @@ async def get_or_create_invite_link():
 
 async def send_find_product_message(chat_id: str, product: Product, is_new: bool = True):
     message_model = find_product_message(product, is_new)
-    # await bot.send_message(
-    #     chat_id=chat_id,
-    #     text=message_model.text,
-    #     reply_markup=message_model.keyboard,
-    #     parse_mode='HTML'
-    # )
-    await bot.send_photo(
-        photo=product.image_url,
-        chat_id=chat_id,
-        caption=message_model.text,
-        reply_markup=message_model.keyboard,
-        parse_mode='HTML'
-    )
+
+    try:
+        await bot.send_photo(
+            photo=product.image_url,
+            chat_id=chat_id,
+            caption=message_model.text,
+            reply_markup=message_model.keyboard,
+            parse_mode='HTML'
+        )
+    except RetryAfter as e:
+        print(f'Retry after error. Timeout: {e.timeout}')
+        await asyncio.sleep(e.timeout)
 
 
 async def remove_user_from_channel(chat_id: str, user_id: int):

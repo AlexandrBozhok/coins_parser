@@ -3,7 +3,7 @@ from typing import Any
 from bson import ObjectId
 
 from src.models.collections import CoinsCollection
-from src.schemas.mongo_collections import Product, ProductUpdateFields
+from src.schemas.mongo_collections import Product, ProductUpdateFields, ProductOut
 
 
 class ProductCRUD:
@@ -23,7 +23,12 @@ class ProductCRUD:
         cursor = CoinsCollection.find(filter, need_fields)
         if return_cursor:
             return cursor
-        return [item async for item in cursor]
+        return [ProductOut(**item) async for item in cursor]
+
+    @classmethod
+    async def insert_one(cls, product: Product) -> str | None:
+        result = await CoinsCollection.insert_one(product.dict())
+        return result.inserted_id
 
     @classmethod
     async def insert_many(cls, products: list[Product]) -> str | None:
@@ -31,9 +36,15 @@ class ProductCRUD:
         return result.inserted_ids
 
     @classmethod
-    async def update_one(cls, product_id: str, update_fields: ProductUpdateFields):
+    async def update_one(cls,
+                         update_fields: ProductUpdateFields,
+                         product_id: str | None = None,
+                         bank_product_id: int | None = None):
+        if not product_id and not bank_product_id:
+            raise AttributeError(f'product_id and bank_product_id is empty. Need one field for filter')
+        filter = {'_id': product_id} if product_id else {'bank_product_id': bank_product_id}
         result = await CoinsCollection.update_one(
-            {'_id': product_id},
+            filter,
             {'$set': update_fields.dict(exclude_none=True)}
         )
         return result
