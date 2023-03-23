@@ -1,10 +1,12 @@
 import logging
+import pytz
 from logging.config import dictConfig
 
 from pydantic import BaseSettings, BaseModel
 
 
 class Settings(BaseSettings):
+    default_tz = pytz.timezone('Europe/Kyiv')
     develop: bool
     nbu_shop_base_url: str
 

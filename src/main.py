@@ -98,7 +98,7 @@ async def report(background_tasks: BackgroundTasks):
 @app.get('/check_subscribe')
 async def check_subscribe():
     expired_subscribers = await ClientCRUD.get_many(
-        filter={'expired_at': {'$lt': datetime.datetime.now()}}
+        filter={'expired_at': {'$lt': datetime.datetime.now(tz=settings.default_tz)}}
     )
     for sub in expired_subscribers:
         try:

@@ -3,6 +3,8 @@ import datetime
 from pydantic import BaseModel, validator, PositiveInt, PositiveFloat
 from pydantic.utils import to_lower_camel
 
+from src.config.settings import settings
+
 
 class PaymentSignParams(BaseModel):
     merchant_account: str
@@ -57,7 +59,7 @@ class PaymentApproveParams(BaseModel):
 
     @validator('time', pre=True, always=True)
     def set_time(cls, v):
-        return v or int(datetime.datetime.now().timestamp())
+        return v or int(datetime.datetime.now(tz=settings.default_tz).timestamp())
 
     class Config:
         allow_population_by_field_name = True
@@ -72,7 +74,7 @@ class ServerApproveResponse(BaseModel):
 
     @validator('time', pre=True, always=True)
     def set_time(cls, v):
-        return v or int(datetime.datetime.now().timestamp())
+        return v or int(datetime.datetime.now(tz=settings.default_tz).timestamp())
 
     class Config:
         allow_population_by_field_name = True
