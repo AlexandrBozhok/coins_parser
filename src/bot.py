@@ -174,13 +174,13 @@ async def send_approve_payment_msg(client_id: str, order_reference: str):
 async def get_or_create_invite_link():
     link_from_db = await InviteCRUD.get()
     if link_from_db:
-        is_expired = link_from_db['expired_at'].timestamp() < datetime.datetime.now().timestamp()
+        is_expired = link_from_db['expired_at'].timestamp() < datetime.datetime.now(tz=settings.default_tz).timestamp()
         if not is_expired:
             return link_from_db['link']
 
     link_obj = await bot.create_chat_invite_link(
         chat_id=settings.channel_id,
-        expire_date=datetime.datetime.now() + datetime.timedelta(days=3),
+        expire_date=datetime.datetime.now(tz=settings.default_tz) + datetime.timedelta(days=3),
         creates_join_request=True
     )
 
@@ -203,7 +203,7 @@ async def send_find_product_message(chat_id: str, product: Product, is_new: bool
             parse_mode='HTML'
         )
     except RetryAfter as e:
-        print(f'Retry after error. Timeout: {e.timeout}')
+        logger.error(f'Retry after error. Timeout: {e.timeout}')
         await asyncio.sleep(e.timeout)
 
 
@@ -233,7 +233,7 @@ async def send_report():
         'available_from': {'$gte': start_dt, '$lt': end_dt}
     })
     cursor = await ClientCRUD.get_many(
-        filter={'expired_at': {'$gte': datetime.datetime.now()}},
+        filter={'expired_at': {'$gte': datetime.datetime.now(tz=settings.default_tz)}},
         cursor_mode=True
     )
     message_model = report_notification_message(new_products=new_products)

@@ -132,7 +132,7 @@ async def __find_new_products(products: list[Product], found_products: list[Prod
 
 
 async def parser_processing(background_tasks: BackgroundTasks):
-    dt_now = datetime.datetime.now()
+    dt_now = datetime.datetime.now(tz=settings.default_tz)
     parser = ProductParser()
     products = await parser.get_all()
     logger.info(f'Product count ready to buy: {len(products)}')
@@ -175,7 +175,7 @@ async def parser_processing(background_tasks: BackgroundTasks):
         )
 
     # Знаходимо товари, які не оновлювались протягом часу, зазначеного в змінній _check_product_age
-    _check_product_age = 30
+    _check_product_age = 5
     await ProductCRUD.update_many(
         {'updated': {'$lt': dt_now - datetime.timedelta(minutes=_check_product_age)}},
         ProductUpdateFields(updated=dt_now, sold_out=True)

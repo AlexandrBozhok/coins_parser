@@ -5,6 +5,8 @@ from bson import ObjectId
 from pydantic import BaseModel, validator, Field
 from pydantic.types import PositiveInt
 
+from src.config.settings import settings
+
 
 class Product(BaseModel):
     created: datetime.datetime = None
@@ -22,7 +24,7 @@ class Product(BaseModel):
 
     @validator('created', 'available_from', 'updated', pre=True, always=True)
     def set_dates(cls, v):
-        return v or datetime.datetime.now()
+        return v or datetime.datetime.now(tz=settings.default_tz)
 
 
 class ProductOut(Product):
@@ -54,7 +56,7 @@ class Payment(BaseModel):
 
     @validator('created', 'updated', pre=True, always=True)
     def set_dates(cls, v):
-        return v or datetime.datetime.now()
+        return v or datetime.datetime.now(tz=settings.default_tz)
 
     @validator('id', pre=True, always=True)
     def set_id(cls, v):
@@ -70,7 +72,7 @@ class PaymentUpdateFields(BaseModel):
 
     @validator('updated', pre=True, always=True)
     def set_updated(cls, v):
-        return v or datetime.datetime.now()
+        return v or datetime.datetime.now(tz=settings.default_tz)
 
 
 class PaymentIn(BaseModel):
@@ -117,7 +119,7 @@ class ClientIn(BaseModel):
 
     @validator('created', 'updated', 'expired_at', pre=True, always=True)
     def set_dates(cls, v):
-        return v or datetime.datetime.now()
+        return v or datetime.datetime.now(tz=settings.default_tz)
 
 
 class ClientOut(BaseModel):
@@ -146,4 +148,4 @@ class Invite(BaseModel):
 
     @validator('created', pre=True, always=True)
     def set_dates(cls, v):
-        return v or datetime.datetime.now()
+        return v or datetime.datetime.now(tz=settings.default_tz)
