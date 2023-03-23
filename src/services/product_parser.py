@@ -98,8 +98,6 @@ class ProductParser:
             items = [item for item in items if item.select_one('.basked_product_bank .add2cart')]
             products = []
             for item in items:
-                print(item)
-                print('-'*200)
                 product_data = self.__parse_product(item)
                 try:
                     products.append(Product(**product_data))

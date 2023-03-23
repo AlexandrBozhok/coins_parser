@@ -203,7 +203,7 @@ async def send_find_product_message(chat_id: str, product: Product, is_new: bool
             parse_mode='HTML'
         )
     except RetryAfter as e:
-        print(f'Retry after error. Timeout: {e.timeout}')
+        logger.error(f'Retry after error. Timeout: {e.timeout}')
         await asyncio.sleep(e.timeout)
 
 
